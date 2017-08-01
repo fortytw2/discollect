@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 	"time"
+
+	"github.com/fortytw2/discollect/countries"
 )
 
 type Config struct {
@@ -20,7 +22,7 @@ type Config struct {
 	// Rate is used to configure rate limits, per-scrape, per-ip, and per-domain
 	Rate *RateLimit
 	// Countries is a list of countries this scrape can be executed from
-	Countries []Country
+	Countries []countries.Country
 }
 
 // RateLimit is a wrapper struct around a variety of per-config rate limits
