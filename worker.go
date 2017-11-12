@@ -17,15 +17,14 @@ type Worker struct {
 	writer Writer
 	er     ErrorReporter
 
-	shutdown chan struct{}
+	shutdown chan chan struct{}
 	closed   chan struct{}
 }
 
 // NewWorker provisions a new worker
 func NewWorker(r *Registry, ro Rotator, rl RateLimiter, q Queue, w Writer, er ErrorReporter) *Worker {
 	return &Worker{
-		shutdown: make(chan struct{}),
-		closed:   make(chan struct{}),
+		shutdown: make(chan chan struct{}),
 	}
 }
 
@@ -37,7 +36,8 @@ func (w *Worker) Start() {
 
 	for {
 		select {
-		case <-w.shutdown:
+		case s := <-w.shutdown:
+			s <- struct{}{}
 			return
 		default:
 			qt, err := w.q.Pop(context.TODO())
@@ -79,8 +79,9 @@ func (w *Worker) Start() {
 
 // Stop initiates stop and then blocks until shutdown is complete
 func (w *Worker) Stop() {
-	w.shutdown <- struct{}{}
-	<-w.closed
+	c := make(chan struct{})
+	w.shutdown <- c
+	<-c
 }
 
 // processTask executes one task
