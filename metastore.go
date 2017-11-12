@@ -7,5 +7,5 @@ type Metastore interface {
 	// StartScrape attempts to start the scrape, returning `true, nil` if the scrape is
 	// able to be started
 	StartScrape(ctx context.Context, pluginName string, cfg *Config) (id string, err error)
-	EndScrape(ctx context.Context, id string, facts, tasks int) error
+	EndScrape(ctx context.Context, id string, datums, tasks int) error
 }

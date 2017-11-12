@@ -85,6 +85,9 @@ a reload.
 `discollect` includes a large number of test helper functions to aid you in writing effective,
 fast tests for your network-based plugins. Read the docs to learn more. (DOC LINK HERE)
 
+`discollect` also supports HTTP-based remote plugins, which can be scaled out easily
+and implemented in any language that can run an HTTP server. 
+
 Metastores
 ------
 
@@ -154,5 +157,14 @@ Region-Aware Plugins & Proxy Rotation
 For many scraping tasks, it's neccessary to only make requests from certain IPs.
 
 
+AJAX Rendering
+------
+
+`discollect` can utilize headless Chrome to render the DOM of AJAX sites. 99% of the time this 
+is wholly unneccessary, as you can emulate XHR requests from within Handlers. To enable, use 
+`discollect.RenderHeadless(r *http.Request)` before making a request with `client.Do`
+
 License
 ------
+
+MIT 

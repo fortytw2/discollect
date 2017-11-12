@@ -7,21 +7,22 @@ import (
 	"time"
 )
 
-// A Worker is a single-threaded worker that pulls N tasks from the queue and processes them
-// in order. To achieve parellelism, use a WorkerGroup
+// A Worker is a single-threaded worker that pulls a single task from the queue at a time
+// and process it to completion
 type Worker struct {
-	r       *Registry
-	rotator Rotator
-	q       Queue
-	writer  Writer
-	er      ErrorReporter
+	r      *Registry
+	ro     Rotator
+	rl     RateLimiter
+	q      Queue
+	writer Writer
+	er     ErrorReporter
 
 	shutdown chan struct{}
 	closed   chan struct{}
 }
 
 // NewWorker provisions a new worker
-func NewWorker(r *Registry, ro Rotator, q Queue, w Writer, er ErrorReporter) *Worker {
+func NewWorker(r *Registry, ro Rotator, rl RateLimiter, q Queue, w Writer, er ErrorReporter) *Worker {
 	return &Worker{
 		shutdown: make(chan struct{}),
 		closed:   make(chan struct{}),
@@ -29,7 +30,7 @@ func NewWorker(r *Registry, ro Rotator, q Queue, w Writer, er ErrorReporter) *Wo
 }
 
 // Start launches the worker
-func (w *Worker) Start(pullCount int) {
+func (w *Worker) Start() {
 	defer func() {
 		w.closed <- struct{}{}
 	}()
@@ -39,25 +40,39 @@ func (w *Worker) Start(pullCount int) {
 		case <-w.shutdown:
 			return
 		default:
-			qts, err := w.q.Pop(context.TODO(), pullCount)
+			qt, err := w.q.Pop(context.TODO())
 			if err != nil {
 				w.er.Report(context.TODO(), nil, err)
 				continue
 			}
 
-			for _, qt := range qts {
-				err = w.processTask(context.TODO(), qt)
-				if err != nil {
-					w.er.Report(context.TODO(), nil, err)
-					continue
+			var timeout time.Duration
+			if qt.Task.Timeout == timeout {
+				timeout = 15 * time.Second
+			} else {
+				timeout = qt.Task.Timeout
+			}
+
+			// set config timeout on all worker actions on this task
+			ctx, cancel := context.WithTimeout(context.Background(), timeout)
+			err = w.processTask(ctx, qt)
+			if err != nil {
+				// retry on rate limit
+				if err == ErrRateLimitExceeded {
+					err = w.q.Retry(ctx, qt)
 				}
 
-				// callback that we've finished the task
-				err = w.q.MarkDone(context.TODO(), qt.TaskID)
-				if err != nil {
-					w.er.Report(context.TODO(), nil, err)
-				}
+				w.er.Report(ctx, nil, err)
+				cancel()
+				continue
 			}
+
+			// callback that we've finished the task
+			err = w.q.Finish(ctx, qt.TaskID)
+			if err != nil {
+				w.er.Report(ctx, nil, err)
+			}
+			cancel()
 		}
 	}
 }
@@ -76,7 +91,14 @@ func (w *Worker) processTask(ctx context.Context, q *QueuedTask) error {
 		return err
 	}
 
-	client, err := w.rotator.Get(q.Config, q.ScrapeID)
+	// if this rate limit blocks too long and the context cancels we can just return
+	// error and the task will be retried later
+	err = w.rl.Limit(ctx, q.Config.Rate, q.Task.URL)
+	if err != nil {
+		return err
+	}
+
+	client, err := w.ro.Get(q.Config, q.ScrapeID)
 	if err != nil {
 		return err
 	}

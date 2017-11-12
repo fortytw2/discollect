@@ -10,10 +10,11 @@ import (
 
 // A Queue is used to submit and retrieve individual tasks
 type Queue interface {
-	Pop(ctx context.Context, i int) ([]*QueuedTask, error)
+	Pop(ctx context.Context) (*QueuedTask, error)
 	Push(ctx context.Context, tasks []*QueuedTask) error
 
-	MarkDone(ctx context.Context, taskID string) error
+	Finish(ctx context.Context, taskID string) error
+	Retry(context.Context, *QueuedTask) error
 }
 
 type QueuedTask struct {
@@ -34,7 +35,10 @@ type QueuedTask struct {
 type Task struct {
 	URL string `json:"url"`
 	// Extra can be used to send information from a parent task to its children
-	Extra map[string]json.RawMessage `json:"extra"`
+	Extra map[string]json.RawMessage `json:"extra,omitempty"`
+	// Timeout is the timeout a single task should have attached to it
+	// defaults to 15s
+	Timeout time.Duration
 }
 
 // TestQueue is a re-useable conformance test for any implementation of Queue to pass

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"net/http"
 	"os"
 )
 
@@ -17,4 +18,15 @@ type Writer interface {
 type FileWriter struct {
 	f   *os.File
 	enc *json.Encoder
+}
+
+// An HTTP Writer POSTS application/json to an endpoint
+type HTTPWriter struct {
+	c   *http.Client
+	url string
+}
+
+// A MultiWriter 
+type MultiWriter struct {
+
 }
