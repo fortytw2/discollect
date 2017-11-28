@@ -14,5 +14,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	err = dc.LaunchScrape("fictionpress", FictionPress.Configs[0])
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Fatal(dc.Run())
 }

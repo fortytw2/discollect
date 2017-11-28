@@ -21,7 +21,7 @@ var FictionPress = &dc.Plugin{
 		},
 	},
 	Routes: map[string]dc.Handler{
-		`https://www.fictionpress.com/s/(.*)/(\d+)/(.*)`: storyPage,
+		`https:\/\/www.fictionpress.com\/s\/(.*)\/(\d+)\/(.*)`: storyPage,
 	},
 }
 
