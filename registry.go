@@ -3,7 +3,6 @@ package discollect
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"regexp"
 )
 
@@ -65,16 +64,13 @@ func (r *Registry) HandlerFor(pluginName string, rawURL string) (Handler, error)
 		return nil, ErrPluginUnregistered
 	}
 
-	u, err := url.Parse(rawURL)
-	if err != nil {
-		return nil, err
-	}
-
 	for route, handler := range p {
-		if route.MatchString(u.Path + u.Query().Encode()) {
+		if route.MatchString(rawURL) {
 			return handler, nil
 		}
 	}
+
+	fmt.Printf("%+v", rawURL)
 
 	return nil, ErrHandlerNotFound
 }

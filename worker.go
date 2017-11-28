@@ -52,6 +52,11 @@ func (w *Worker) Start() {
 				continue
 			}
 
+			if qt == nil {
+				time.Sleep(100 * time.Millisecond)
+				continue
+			}
+
 			var timeout time.Duration
 			if qt.Task.Timeout == timeout {
 				timeout = 15 * time.Second
@@ -63,11 +68,6 @@ func (w *Worker) Start() {
 			ctx, cancel := context.WithTimeout(context.Background(), timeout)
 			err = w.processTask(ctx, qt)
 			if err != nil {
-				// retry on rate limit
-				if err == ErrRateLimitExceeded {
-					err = w.q.Retry(ctx, qt)
-				}
-
 				w.er.Report(ctx, nil, err)
 				cancel()
 				continue
@@ -164,7 +164,7 @@ func (w *Worker) processTask(ctx context.Context, q *QueuedTask) error {
 	}()
 
 	// wait for all 3 writers to finish
-	wg.Done()
+	wg.Wait()
 
 	// close error writer
 	var out []error

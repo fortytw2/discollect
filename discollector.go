@@ -19,6 +19,10 @@ type OptionFn func(d *Discollector) error
 var defaultOpts = []OptionFn{
 	WithWriter(&StdoutWriter{}),
 	WithErrorReporter(&StdoutReporter{}),
+	WithRateLimiter(&NilRateLimiter{}),
+	WithRotator(&DefaultRotator{}),
+	WithQueue(NewMemQueue()),
+	WithMetastore(&MemMetastore{}),
 }
 
 // New returns a new Discollector
@@ -87,6 +91,38 @@ func WithWriter(w Writer) OptionFn {
 func WithErrorReporter(er ErrorReporter) OptionFn {
 	return func(d *Discollector) error {
 		d.er = er
+		return nil
+	}
+}
+
+// WithRateLimiter sets the RateLimiter for the Discollector
+func WithRateLimiter(rl RateLimiter) OptionFn {
+	return func(d *Discollector) error {
+		d.rl = rl
+		return nil
+	}
+}
+
+// WithRotator sets the Rotator for the Discollector
+func WithRotator(ro Rotator) OptionFn {
+	return func(d *Discollector) error {
+		d.ro = ro
+		return nil
+	}
+}
+
+// WithQueue sets the Queue for the Discollector
+func WithQueue(q Queue) OptionFn {
+	return func(d *Discollector) error {
+		d.q = q
+		return nil
+	}
+}
+
+// WithMetastore sets the Metastore for the Discollector
+func WithMetastore(ms Metastore) OptionFn {
+	return func(d *Discollector) error {
+		d.ms = ms
 		return nil
 	}
 }

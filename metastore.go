@@ -1,6 +1,10 @@
 package discollect
 
-import "context"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 // A Metastore is used to store the history of all scrape runs
 type Metastore interface {
@@ -8,4 +12,14 @@ type Metastore interface {
 	// able to be started
 	StartScrape(ctx context.Context, pluginName string, cfg *Config) (id string, err error)
 	EndScrape(ctx context.Context, id string, datums, tasks int) error
+}
+
+type MemMetastore struct {
+}
+
+func (MemMetastore) StartScrape(ctx context.Context, pluginName string, cfg *Config) (id string, err error) {
+	return uuid.New().String(), nil
+}
+func (MemMetastore) EndScrape(ctx context.Context, id string, datums, tasks int) error {
+	return nil
 }

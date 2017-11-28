@@ -16,3 +16,9 @@ type RateLimiter interface {
 	// limit blocks until the rate limit is ok
 	Limit(ctx context.Context, rl *RateLimit, url string) error
 }
+
+type NilRateLimiter struct{}
+
+func (NilRateLimiter) Limit(ctx context.Context, rl *RateLimit, url string) error {
+	return nil
+}

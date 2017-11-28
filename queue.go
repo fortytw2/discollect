@@ -3,6 +3,7 @@ package discollect
 import (
 	"context"
 	"encoding/json"
+	"sync"
 	"time"
 
 	"github.com/oklog/ulid"
@@ -14,7 +15,6 @@ type Queue interface {
 	Push(ctx context.Context, tasks []*QueuedTask) error
 
 	Finish(ctx context.Context, taskID ulid.ULID) error
-	Retry(context.Context, *QueuedTask) error
 }
 
 // A QueuedTask is the struct for a task that goes on the Queue
@@ -40,4 +40,39 @@ type Task struct {
 	// Timeout is the timeout a single task should have attached to it
 	// defaults to 15s
 	Timeout time.Duration
+}
+
+// NewMemQueue makes a new purely in-memory queue
+func NewMemQueue() *MemQueue {
+	return &MemQueue{}
+}
+
+type MemQueue struct {
+	mu sync.Mutex
+	q  []*QueuedTask
+}
+
+func (mq *MemQueue) Pop(ctx context.Context) (*QueuedTask, error) {
+	mq.mu.Lock()
+	defer mq.mu.Unlock()
+
+	if len(mq.q) == 0 {
+		return nil, nil
+	}
+
+	qt := mq.q[0]
+	mq.q = mq.q[1:]
+
+	return qt, nil
+}
+func (mq *MemQueue) Push(ctx context.Context, tasks []*QueuedTask) error {
+	mq.mu.Lock()
+	defer mq.mu.Unlock()
+
+	mq.q = append(mq.q, tasks...)
+	return nil
+}
+
+func (mq *MemQueue) Finish(ctx context.Context, taskID ulid.ULID) error {
+	return nil
 }

@@ -6,3 +6,9 @@ import "net/http"
 type Rotator interface {
 	Get(c *Config, id string) (*http.Client, error)
 }
+
+type DefaultRotator struct{}
+
+func (DefaultRotator) Get(c *Config, id string) (*http.Client, error) {
+	return http.DefaultClient, nil
+}
