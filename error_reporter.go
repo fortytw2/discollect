@@ -2,6 +2,7 @@ package discollect
 
 import (
 	"context"
+	"fmt"
 )
 
 // An ErrorReporter is used to send forward faulty handler runs to
@@ -18,4 +19,12 @@ type ReporterOpts struct {
 	ScrapeID string
 	Plugin   string
 	URL      string
+}
+
+// StdoutReporter writes all errors to Stdout
+type StdoutReporter struct{}
+
+// Report prints out the error
+func (StdoutReporter) Report(ctx context.Context, ro *ReporterOpts, err error) {
+	fmt.Printf("error-reporter: %+v, %s\n", ro, err)
 }

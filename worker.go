@@ -10,12 +10,12 @@ import (
 // A Worker is a single-threaded worker that pulls a single task from the queue at a time
 // and process it to completion
 type Worker struct {
-	r      *Registry
-	ro     Rotator
-	rl     RateLimiter
-	q      Queue
-	writer Writer
-	er     ErrorReporter
+	r  *Registry
+	ro Rotator
+	rl RateLimiter
+	q  Queue
+	w  Writer
+	er ErrorReporter
 
 	shutdown chan chan struct{}
 	closed   chan struct{}
@@ -24,6 +24,12 @@ type Worker struct {
 // NewWorker provisions a new worker
 func NewWorker(r *Registry, ro Rotator, rl RateLimiter, q Queue, w Writer, er ErrorReporter) *Worker {
 	return &Worker{
+		r:        r,
+		ro:       ro,
+		rl:       rl,
+		q:        q,
+		w:        w,
+		er:       er,
 		shutdown: make(chan chan struct{}),
 	}
 }
@@ -150,7 +156,7 @@ func (w *Worker) processTask(ctx context.Context, q *QueuedTask) error {
 		defer wg.Done()
 
 		for _, f := range resp.Facts {
-			err := w.writer.Write(ctx, f)
+			err := w.w.Write(ctx, f)
 			if err != nil {
 				errs <- err
 			}
@@ -176,6 +182,7 @@ func (w *Worker) processTask(ctx context.Context, q *QueuedTask) error {
 	}
 }
 
+// WorkerErr carries errors from a task
 type WorkerErr struct {
 	QueuedTask *QueuedTask
 	Errors     []error

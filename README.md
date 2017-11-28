@@ -99,7 +99,6 @@ from
 
 - SQLite3 (good for single node deployments, can work for worker deployments)
 - PostgreSQL 9.4+ (for single master, many worker deployments)
-- etcd3 (for multi-master, true HA deployments)
 
 Task Queues
 ------

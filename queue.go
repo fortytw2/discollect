@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/fortytw2/discollect/testing"
+	"github.com/oklog/ulid"
 )
 
 // A Queue is used to submit and retrieve individual tasks
@@ -13,14 +13,15 @@ type Queue interface {
 	Pop(ctx context.Context) (*QueuedTask, error)
 	Push(ctx context.Context, tasks []*QueuedTask) error
 
-	Finish(ctx context.Context, taskID string) error
+	Finish(ctx context.Context, taskID ulid.ULID) error
 	Retry(context.Context, *QueuedTask) error
 }
 
+// A QueuedTask is the struct for a task that goes on the Queue
 type QueuedTask struct {
 	// set by the TaskQueue
-	TaskID   string `json:"task_id"`
-	ScrapeID string `json:"scrape_id"`
+	TaskID   ulid.ULID `json:"task_id"`
+	ScrapeID string    `json:"scrape_id"`
 
 	QueuedAt time.Time `json:"queued_at"`
 	Config   *Config   `json:"config"`
@@ -39,9 +40,4 @@ type Task struct {
 	// Timeout is the timeout a single task should have attached to it
 	// defaults to 15s
 	Timeout time.Duration
-}
-
-// TestQueue is a re-useable conformance test for any implementation of Queue to pass
-func TestQueue(t testing.T, q Queue) {
-	return
 }
