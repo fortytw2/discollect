@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/oklog/ulid"
-
 	"github.com/fortytw2/discollect/countries"
+	"github.com/oklog/ulid"
 )
 
 // A Plugin is capable of running scrapes, ideally of a common type or against a single site
@@ -16,13 +15,17 @@ type Plugin struct {
 	Name     string
 	Schedule *Schedule
 	Configs  []*Config
-	Routes   map[string]Handler
+	// A ConfigValidator is used to validate dynamically loaded configs
+	ConfigValidator func(*Config) error
+	Routes          map[string]Handler
 }
 
 // Config is a specific configuration of a given plugin
 type Config struct {
-	// DynamicEntry specifies whether this plugin must have preloaded
-	// Entrypoints, or if they can be dynamically specified, i.e by an end user
+	// friendly identifier for this config
+	Name string
+	// DynamicEntry specifies whether this config was created dynamically
+	// or is a preset
 	DynamicEntry bool
 	// Entrypoints is used to start a scrape
 	Entrypoints []string

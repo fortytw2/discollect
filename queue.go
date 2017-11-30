@@ -47,11 +47,13 @@ func NewMemQueue() *MemQueue {
 	return &MemQueue{}
 }
 
+// A MemQueue is a super simple Queue backed by an array and a mutex
 type MemQueue struct {
 	mu sync.Mutex
 	q  []*QueuedTask
 }
 
+// Pop pops a single task off the left side of the array
 func (mq *MemQueue) Pop(ctx context.Context) (*QueuedTask, error) {
 	mq.mu.Lock()
 	defer mq.mu.Unlock()
@@ -65,6 +67,8 @@ func (mq *MemQueue) Pop(ctx context.Context) (*QueuedTask, error) {
 
 	return qt, nil
 }
+
+// Push appends tasks to the right side of the array
 func (mq *MemQueue) Push(ctx context.Context, tasks []*QueuedTask) error {
 	mq.mu.Lock()
 	defer mq.mu.Unlock()
@@ -73,6 +77,7 @@ func (mq *MemQueue) Push(ctx context.Context, tasks []*QueuedTask) error {
 	return nil
 }
 
+// Finish is a no-op for the MemQueue
 func (mq *MemQueue) Finish(ctx context.Context, taskID ulid.ULID) error {
 	return nil
 }

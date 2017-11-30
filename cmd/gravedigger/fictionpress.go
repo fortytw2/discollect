@@ -20,10 +20,12 @@ var FictionPress = &dc.Plugin{
 		{
 			Entrypoints: []string{`https://www.fictionpress.com/s/2961893/1/Mother-of-Learning`},
 			Type:        "full",
+			Name:        "Mother of Learning",
 		},
 	},
+	ConfigValidator: nil,
 	Routes: map[string]dc.Handler{
-		`https:\/\/www.fictionpress.com\/s\/(.*)\/(\d+)\/(.*)`: storyPage,
+		`https:\/\/www.fictionpress.com\/s\/(.*)\/(\d+)(.*)`: storyPage,
 	},
 }
 
@@ -67,7 +69,7 @@ func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerR
 			}
 
 			tasks = append(tasks, &dc.Task{
-				URL: fmt.Sprintf("https://www.fictionpress.com/s/2961893/%s/Mother-of-Learning", val),
+				URL: fmt.Sprintf("https://www.fictionpress.com/s/%s/%s", ho.RouteParams[1], val),
 			})
 		})
 	}
