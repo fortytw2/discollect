@@ -88,7 +88,13 @@ func launchScrape(ctx context.Context, p *Plugin, cfg *Config, q Queue, ms Metas
 	}
 
 	if cfg.DynamicEntry {
-		return errors.New("dynamic entrypoint scrapes not supported")
+		if p.ConfigValidator == nil {
+			return errors.New("cannot launch DynamicEntry config for plugin without ConfigValidator")
+		}
+		err = p.ConfigValidator(cfg)
+		if err != nil {
+			return err
+		}
 	}
 
 	qts := make([]*QueuedTask, len(cfg.Entrypoints))

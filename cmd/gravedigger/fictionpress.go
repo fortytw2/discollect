@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"html"
 	"strings"
@@ -16,23 +17,23 @@ import (
 // FictionPress is a plugin that can scrape fictionpress
 var FictionPress = &dc.Plugin{
 	Name: "fictionpress",
-	Configs: []*dc.Config{
-		{
-			Entrypoints: []string{`https://www.fictionpress.com/s/2961893/1/Mother-of-Learning`},
-			Type:        "full",
-			Name:        "Mother of Learning",
-		},
+	ConfigValidator: func(c *dc.Config) error {
+		for _, e := range c.Entrypoints {
+			if !strings.Contains(e, "fictionpress.com") && !strings.Contains(e, "fanfiction.net") {
+				return errors.New("fictionpress plugin only works for fictionpress and fanfiction.net")
+			}
+		}
+		return nil
 	},
-	ConfigValidator: nil,
 	Routes: map[string]dc.Handler{
 		`https:\/\/www.fictionpress.com\/s\/(.*)\/(\d+)(.*)`: storyPage,
 	},
 }
 
 type chapter struct {
-	Author   string
-	PostedAt time.Time
-	Body     string
+	Author   string    `json:"author,omitempty"`
+	PostedAt time.Time `json:"posted_at,omitempty"`
+	Body     string    `json:"body,omitempty"`
 }
 
 func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerResponse {
