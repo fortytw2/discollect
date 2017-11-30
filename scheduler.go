@@ -1,7 +1,9 @@
 package discollect
 
-import "context"
-import "time"
+import (
+	"context"
+	"time"
+)
 
 // A ScheduleStore is used to store and manage schedules of configs that need to be run
 // periodically

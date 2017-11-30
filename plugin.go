@@ -24,11 +24,13 @@ type Plugin struct {
 type Config struct {
 	// friendly identifier for this config
 	Name string
+	// Entrypoints is used to start a scrape
+	Entrypoints []string
 	// DynamicEntry specifies whether this config was created dynamically
 	// or is a preset
 	DynamicEntry bool
-	// Entrypoints is used to start a scrape
-	Entrypoints []string
+	// if Entrypoints is null, we can compute the entrypoint (i.e. in a time based Delta)
+	ComputedEntry func(ctx context.Context, cfg *Config) error
 	// A Plugin can have many types of Scrapes
 	// common ones are "full" and "delta"
 	Type string
