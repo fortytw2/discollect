@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"html"
 	"strings"
 	"time"
 
@@ -33,8 +34,6 @@ type chapter struct {
 }
 
 func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerResponse {
-	fmt.Println("working task", t.URL)
-
 	resp, err := ho.Client.Get(t.URL)
 	if err != nil {
 		return dc.ErrorResponse(err)
@@ -54,7 +53,7 @@ func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerR
 	c := &chapter{
 		Author:   strings.TrimSpace(doc.Find(`#profile_top .xcontrast_txt+ a.xcontrast_txt`).Text()),
 		PostedAt: time.Now(),
-		Body:     strings.TrimSpace(body),
+		Body:     html.UnescapeString(strings.TrimSpace(body)),
 	}
 
 	// find all chapters if this is the first one
