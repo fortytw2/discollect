@@ -1,6 +1,9 @@
 package discollect
 
-import "context"
+import (
+	"context"
+	"errors"
+)
 
 // A Discollector ties every element of Discollect together
 type Discollector struct {
@@ -41,6 +44,10 @@ func New(opts ...OptionFn) (*Discollector, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	if d.r == nil {
+		return nil, errors.New("no plugins registered")
 	}
 
 	return d, nil

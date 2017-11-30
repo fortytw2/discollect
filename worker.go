@@ -18,7 +18,6 @@ type Worker struct {
 	er ErrorReporter
 
 	shutdown chan chan struct{}
-	closed   chan struct{}
 }
 
 // NewWorker provisions a new worker
@@ -36,10 +35,6 @@ func NewWorker(r *Registry, ro Rotator, rl RateLimiter, q Queue, w Writer, er Er
 
 // Start launches the worker
 func (w *Worker) Start() {
-	defer func() {
-		w.closed <- struct{}{}
-	}()
-
 	for {
 		select {
 		case s := <-w.shutdown:
