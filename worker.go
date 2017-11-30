@@ -48,7 +48,7 @@ func (w *Worker) Start() {
 			}
 
 			if qt == nil {
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(250 * time.Millisecond)
 				continue
 			}
 
@@ -73,6 +73,7 @@ func (w *Worker) Start() {
 			if err != nil {
 				w.er.Report(ctx, nil, err)
 			}
+
 			cancel()
 		}
 	}
@@ -88,7 +89,7 @@ func (w *Worker) Stop() {
 // processTask executes one task
 // Safe for concurrent use.
 func (w *Worker) processTask(ctx context.Context, q *QueuedTask) error {
-	handler, err := w.r.HandlerFor(q.Plugin, q.Task.URL)
+	handler, params, err := w.r.HandlerFor(q.Plugin, q.Task.URL)
 	if err != nil {
 		return err
 	}
@@ -106,8 +107,9 @@ func (w *Worker) processTask(ctx context.Context, q *QueuedTask) error {
 	}
 
 	resp := handler(ctx, &HandlerOpts{
-		Config: q.Config,
-		Client: client,
+		Config:      q.Config,
+		RouteParams: params,
+		Client:      client,
 	}, q.Task)
 
 	errs := make(chan error, 8)
@@ -160,11 +162,15 @@ func (w *Worker) processTask(ctx context.Context, q *QueuedTask) error {
 
 	// wait for all 3 writers to finish
 	wg.Wait()
+	// close error channel
+	close(errs)
 
 	// close error writer
 	var out []error
 	for e := range errs {
-		out = append(out, e)
+		if e != nil {
+			out = append(out, e)
+		}
 	}
 
 	if len(out) == 0 {

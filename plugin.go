@@ -51,7 +51,9 @@ type RateLimit struct {
 // HandlerOpts are passed to a Handler
 type HandlerOpts struct {
 	Config *Config
-	Client *http.Client
+	// RouteParams are Capture Groups from the Route regexp
+	RouteParams []string
+	Client      *http.Client
 }
 
 // A HandlerResponse is returned from a Handler
@@ -61,6 +63,7 @@ type HandlerResponse struct {
 	Errors []error
 }
 
+// ErrorResponse is a helper for returning an error from a Handler
 func ErrorResponse(err error) *HandlerResponse {
 	return &HandlerResponse{
 		Errors: []error{

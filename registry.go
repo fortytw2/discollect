@@ -58,19 +58,19 @@ func (r *Registry) Get(name string) (*Plugin, error) {
 }
 
 // HandlerFor is the core "router" used to point Tasks to an individual Handler
-func (r *Registry) HandlerFor(pluginName string, rawURL string) (Handler, error) {
+func (r *Registry) HandlerFor(pluginName string, rawURL string) (Handler, []string, error) {
 	p, ok := r.handlers[pluginName]
 	if !ok {
-		return nil, ErrPluginUnregistered
+		return nil, nil, ErrPluginUnregistered
 	}
 
 	for route, handler := range p {
 		if route.MatchString(rawURL) {
-			return handler, nil
+			return handler, route.FindStringSubmatch(rawURL), nil
 		}
 	}
 
 	fmt.Printf("%+v", rawURL)
 
-	return nil, ErrHandlerNotFound
+	return nil, nil, ErrHandlerNotFound
 }

@@ -3,6 +3,7 @@ package discollect
 import (
 	"context"
 	"errors"
+	"time"
 )
 
 var (
@@ -20,5 +21,6 @@ type RateLimiter interface {
 type NilRateLimiter struct{}
 
 func (NilRateLimiter) Limit(ctx context.Context, rl *RateLimit, url string) error {
+	time.Sleep(100 * time.Millisecond)
 	return nil
 }

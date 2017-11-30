@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -32,6 +33,8 @@ type chapter struct {
 }
 
 func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerResponse {
+	fmt.Println("working task", t.URL)
+
 	resp, err := ho.Client.Get(t.URL)
 	if err != nil {
 		return dc.ErrorResponse(err)
@@ -43,10 +46,31 @@ func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerR
 		return dc.ErrorResponse(err)
 	}
 
+	body, err := doc.Find(`#storytext`).Html()
+	if err != nil {
+		return dc.ErrorResponse(err)
+	}
+
 	c := &chapter{
 		Author:   strings.TrimSpace(doc.Find(`#profile_top .xcontrast_txt+ a.xcontrast_txt`).Text()),
 		PostedAt: time.Now(),
-		Body:     strings.TrimSpace(doc.Find(`#storytext`).Text()),
+		Body:     strings.TrimSpace(body),
+	}
+
+	// find all chapters if this is the first one
+	var tasks []*dc.Task
+	// only for the first task
+	if ho.RouteParams[2] == "1" {
+		doc.Find(`#chap_select`).First().Find(`option`).Each(func(i int, sel *goquery.Selection) {
+			val, exists := sel.Attr("value")
+			if !exists || val == "1" {
+				return
+			}
+
+			tasks = append(tasks, &dc.Task{
+				URL: fmt.Sprintf("https://www.fictionpress.com/s/2961893/%s/Mother-of-Learning", val),
+			})
+		})
 	}
 
 	var errs []error
@@ -55,10 +79,6 @@ func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerR
 		Facts: []interface{}{
 			c,
 		},
-		// Tasks: []*dc.Task{
-		// 	{
-		// 		URL: "",
-		// 	},
-		// },
+		Tasks: tasks,
 	}
 }
