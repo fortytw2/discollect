@@ -62,6 +62,10 @@ func (d *Discollector) Run() error {
 	return nil
 }
 
+func (d *Discollector) Shutdown(ctx context.Context) {
+
+}
+
 // LaunchScrape starts a scrape run
 func (d *Discollector) LaunchScrape(pluginName string, cfg *Config) error {
 	p, err := d.r.Get(pluginName)

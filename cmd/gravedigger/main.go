@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
 
 	"github.com/fortytw2/discollect"
+	"github.com/fortytw2/discollect/api"
+	"github.com/oklog/oklog/pkg/group"
 )
 
 func main() {
@@ -24,5 +28,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Fatal(dc.Run())
+	r := api.Router(dc)
+	h := &http.Server{
+		Addr:    ":8080",
+		Handler: r,
+	}
+
+	var g group.Group
+	{
+		g.Add(h.ListenAndServe, func(error) {
+			h.Shutdown(context.Background())
+		})
+	}
+	{
+		g.Add(dc.Run, func(error) {
+			dc.Shutdown(context.Background())
+		})
+	}
+
+	log.Fatal(g.Run())
 }

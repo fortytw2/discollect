@@ -1,10 +1,11 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/fortytw2/discollect"
 )
 
-// A Server is able to serve an HTTP/JSON API on top of a discollector
-type Server struct {
-	d *discollect.Discollector
+func Router(dc *discollect.Discollector) *http.ServeMux {
+	return http.DefaultServeMux
 }
