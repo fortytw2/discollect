@@ -75,9 +75,7 @@ func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerR
 		})
 	}
 
-	var errs []error
 	return &dc.HandlerResponse{
-		Errors: errs,
 		Facts: []interface{}{
 			c,
 		},
