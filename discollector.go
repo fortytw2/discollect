@@ -3,6 +3,7 @@ package discollect
 import (
 	"context"
 	"errors"
+	"sync"
 )
 
 // A Discollector ties every element of Discollect together
@@ -14,6 +15,9 @@ type Discollector struct {
 	q  Queue
 	ms Metastore
 	er ErrorReporter
+
+	workerMu sync.RWMutex
+	workers  []*Worker
 }
 
 // An OptionFn is used to pass options to a Discollector
@@ -50,20 +54,37 @@ func New(opts ...OptionFn) (*Discollector, error) {
 		return nil, errors.New("no plugins registered")
 	}
 
+	d.workers = make([]*Worker, 0)
+
 	return d, nil
 }
 
-// Run starts the scraping loops
-func (d *Discollector) Run() error {
-	w := NewWorker(d.r, d.ro, d.rl, d.q, d.w, d.er)
+// Start starts the scraping loops
+func (d *Discollector) Start(workers int) error {
+	d.workerMu.Lock()
+	defer d.workerMu.Unlock()
 
-	w.Start()
+	for i := workers; i > 0; i-- {
+		w := NewWorker(d.r, d.ro, d.rl, d.q, d.w, d.er)
+		d.workers = append(d.workers, w)
+	}
+
+	for _, w := range d.workers {
+		go w.Start()
+	}
 
 	return nil
 }
 
+// Shutdown spins down all the workers after allowing them to finish
+// their current tasks
 func (d *Discollector) Shutdown(ctx context.Context) {
+	d.workerMu.RLock()
+	defer d.workerMu.RUnlock()
 
+	for _, w := range d.workers {
+		w.Stop()
+	}
 }
 
 // LaunchScrape starts a scrape run

@@ -7,5 +7,7 @@ import (
 )
 
 func Router(dc *discollect.Discollector) *http.ServeMux {
-	return http.DefaultServeMux
+	m := http.NewServeMux()
+
+	return m
 }
