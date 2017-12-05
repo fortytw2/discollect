@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/fortytw2/discollect"
 	"github.com/fortytw2/discollect/api"
@@ -41,7 +42,7 @@ func main() {
 		})
 	}
 	{
-		g.Add(func() error { return dc.Start(1) }, func(error) {
+		g.Add(func() error { return dc.Start(3, time.Second) }, func(error) {
 			dc.Shutdown(context.Background())
 		})
 	}

@@ -70,7 +70,5 @@ func (r *Registry) HandlerFor(pluginName string, rawURL string) (Handler, []stri
 		}
 	}
 
-	fmt.Printf("%+v", rawURL)
-
 	return nil, nil, ErrHandlerNotFound
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/oklog/ulid"
 )
@@ -62,12 +63,12 @@ func New(opts ...OptionFn) (*Discollector, error) {
 }
 
 // Start starts the scraping loops
-func (d *Discollector) Start(workers int) error {
+func (d *Discollector) Start(workers int, cooldown time.Duration) error {
 	d.workerMu.Lock()
 	defer d.workerMu.Unlock()
 
 	for i := workers; i > 0; i-- {
-		w := NewWorker(d.r, d.ro, d.rl, d.q, d.w, d.er)
+		w := NewWorker(d.r, d.ro, d.rl, d.q, d.w, d.er, cooldown)
 		d.workers = append(d.workers, w)
 	}
 

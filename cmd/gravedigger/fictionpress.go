@@ -34,9 +34,10 @@ var FictionPress = &dc.Plugin{
 }
 
 type chapter struct {
-	Author   string    `json:"author,omitempty"`
-	PostedAt time.Time `json:"posted_at,omitempty"`
-	Body     string    `json:"body,omitempty"`
+	Author    string    `json:"author,omitempty"`
+	PostedAt  time.Time `json:"posted_at,omitempty"`
+	Body      string    `json:"body,omitempty"`
+	WordCount int       `json:"word_count,omitempty"`
 }
 
 func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerResponse {
@@ -60,10 +61,12 @@ func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerR
 		return dc.ErrorResponse(err)
 	}
 
+	markdownBody := html2md.Convert(html.UnescapeString(strings.TrimSpace(body)))
 	c := &chapter{
-		Author:   strings.TrimSpace(doc.Find(`#profile_top .xcontrast_txt+ a.xcontrast_txt`).Text()),
-		PostedAt: time.Now(),
-		Body:     html2md.Convert(html.UnescapeString(strings.TrimSpace(body))),
+		Author:    strings.TrimSpace(doc.Find(`#profile_top .xcontrast_txt+ a.xcontrast_txt`).Text()),
+		PostedAt:  time.Now(),
+		Body:      markdownBody,
+		WordCount: len(strings.Split(markdownBody, " ")),
 	}
 
 	// find all chapters if this is the first one
