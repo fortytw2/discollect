@@ -9,10 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lunny/html2md"
-
 	"github.com/Puerkitobio/goquery"
 	"github.com/fortytw2/hydrocarbon/httpx"
+	"github.com/lunny/html2md"
 
 	dc "github.com/fortytw2/discollect"
 )
@@ -29,7 +28,7 @@ var FictionPress = &dc.Plugin{
 		return nil
 	},
 	Routes: map[string]dc.Handler{
-		`https:\/\/www.fictionpress.com\/s\/(.*)\/(\d+)(.*)`: storyPage,
+		`https:\/\/www.(fictionpress.com|fanfiction.net)\/s\/(.*)\/(\d+)(.*)`: storyPage,
 	},
 }
 
@@ -72,7 +71,7 @@ func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerR
 	// find all chapters if this is the first one
 	var tasks []*dc.Task
 	// only for the first task
-	if ho.RouteParams[2] == "1" {
+	if ho.RouteParams[3] == "1" {
 		doc.Find(`#chap_select`).First().Find(`option`).Each(func(i int, sel *goquery.Selection) {
 			val, exists := sel.Attr("value")
 			if !exists || val == "1" {
@@ -80,7 +79,7 @@ func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerR
 			}
 
 			tasks = append(tasks, &dc.Task{
-				URL: fmt.Sprintf("https://www.fictionpress.com/s/%s/%s", ho.RouteParams[1], val),
+				URL: fmt.Sprintf("https://www.fictionpress.com/s/%s/%s", ho.RouteParams[2], val),
 			})
 		})
 	}

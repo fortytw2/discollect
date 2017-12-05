@@ -3,7 +3,6 @@ package discollect
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -20,8 +19,7 @@ type StdoutWriter struct{}
 
 // Write printf %+v the datum to stdout
 func (sw *StdoutWriter) Write(ctx context.Context, f interface{}) error {
-	fmt.Printf("%+v\n", f)
-	return nil
+	return json.NewEncoder(os.Stdout).Encode(f)
 }
 
 // Close is a no-op function so the StdoutWriter works
