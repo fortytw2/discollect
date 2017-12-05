@@ -3,6 +3,8 @@ package discollect
 import (
 	"context"
 	"fmt"
+
+	"github.com/oklog/ulid"
 )
 
 // An ErrorReporter is used to send forward faulty handler runs to
@@ -16,7 +18,7 @@ type ErrorReporter interface {
 
 // ReporterOpts is used to attach additional information to an error
 type ReporterOpts struct {
-	ScrapeID string
+	ScrapeID ulid.ULID
 	Plugin   string
 	URL      string
 }

@@ -34,13 +34,16 @@ func NewWorker(r *Registry, ro Rotator, rl RateLimiter, q Queue, w Writer, er Er
 }
 
 // Start launches the worker
-func (w *Worker) Start() {
+func (w *Worker) Start(wg *sync.WaitGroup) {
+	defer wg.Done()
 	for {
 		select {
 		case s := <-w.shutdown:
 			s <- struct{}{}
 			return
 		default:
+			fmt.Println("polling")
+			time.Sleep(100 * time.Millisecond)
 			qt, err := w.q.Pop(context.TODO())
 			if err != nil {
 				w.er.Report(context.TODO(), nil, err)
@@ -48,7 +51,6 @@ func (w *Worker) Start() {
 			}
 
 			if qt == nil {
-				time.Sleep(250 * time.Millisecond)
 				continue
 			}
 
@@ -101,7 +103,7 @@ func (w *Worker) processTask(ctx context.Context, q *QueuedTask) error {
 		return err
 	}
 
-	client, err := w.ro.Get(q.Config, q.ScrapeID)
+	client, err := w.ro.Get(q.Config)
 	if err != nil {
 		return err
 	}

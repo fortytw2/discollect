@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"sync"
+
+	"github.com/oklog/ulid"
 )
 
 // A Discollector ties every element of Discollect together
@@ -27,7 +29,7 @@ var defaultOpts = []OptionFn{
 	WithWriter(&StdoutWriter{}),
 	WithErrorReporter(&StdoutReporter{}),
 	WithRateLimiter(&NilRateLimiter{}),
-	WithRotator(&DefaultRotator{}),
+	WithRotator(NewDefaultRotator()),
 	WithQueue(NewMemQueue()),
 	WithMetastore(&MemMetastore{}),
 }
@@ -69,9 +71,12 @@ func (d *Discollector) Start(workers int) error {
 		d.workers = append(d.workers, w)
 	}
 
+	var wg sync.WaitGroup
 	for _, w := range d.workers {
-		go w.Start()
+		wg.Add(1)
+		go w.Start(&wg)
 	}
+	wg.Wait()
 
 	return nil
 }
@@ -157,4 +162,28 @@ func WithMetastore(ms Metastore) OptionFn {
 		d.ms = ms
 		return nil
 	}
+}
+
+// A Scrape is a human readable representation of a scrape
+type Scrape struct {
+	ID             ulid.ULID `json:"id"`
+	PluginName     string    `json:"plugin"`
+	EnqueuedTasks  int       `json:"enqueued_tasks"`
+	CompletedTasks int       `json:"completed_tasks"`
+}
+
+// GetScrape returns a currently running scrape by ID
+func (d *Discollector) GetScrape(ctx context.Context, id ulid.ULID) (*Scrape, error) {
+	return nil, nil
+}
+
+// ListScrapes lists all currently running scrapes
+func (d *Discollector) ListScrapes(ctx context.Context) ([]*Scrape, error) {
+	return nil, nil
+}
+
+// StartScrape launches a new scrape
+func (d *Discollector) StartScrape(ctx context.Context, pluginName string, config *Config) (string, error) {
+
+	return "", nil
 }

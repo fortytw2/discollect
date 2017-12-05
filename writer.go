@@ -15,13 +15,16 @@ type Writer interface {
 	io.Closer
 }
 
+// StdoutWriter fmt.Printfs to stdout
 type StdoutWriter struct{}
 
+// Write printf %+v the datum to stdout
 func (sw *StdoutWriter) Write(ctx context.Context, f interface{}) error {
 	fmt.Printf("%+v\n", f)
 	return nil
 }
 
+// Close is a no-op function so the StdoutWriter works
 func (sw *StdoutWriter) Close() error {
 	return nil
 }
@@ -38,6 +41,6 @@ type HTTPWriter struct {
 	url string
 }
 
-// A MultiWriter writes
+// A MultiWriter writes to multiple writers at once, in parallel
 type MultiWriter struct {
 }

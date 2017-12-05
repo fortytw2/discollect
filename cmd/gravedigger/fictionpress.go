@@ -5,8 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"html"
+	"net/http"
 	"strings"
 	"time"
+
+	"github.com/lunny/html2md"
 
 	"github.com/Puerkitobio/goquery"
 	"github.com/fortytw2/hydrocarbon/httpx"
@@ -43,6 +46,10 @@ func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerR
 	}
 	defer httpx.DrainAndClose(resp.Body)
 
+	if resp.StatusCode != http.StatusOK {
+		return dc.ErrorResponse(errors.New("did not get 200"))
+	}
+
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return dc.ErrorResponse(err)
@@ -56,7 +63,7 @@ func storyPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerR
 	c := &chapter{
 		Author:   strings.TrimSpace(doc.Find(`#profile_top .xcontrast_txt+ a.xcontrast_txt`).Text()),
 		PostedAt: time.Now(),
-		Body:     html.UnescapeString(strings.TrimSpace(body)),
+		Body:     html2md.Convert(html.UnescapeString(strings.TrimSpace(body))),
 	}
 
 	// find all chapters if this is the first one

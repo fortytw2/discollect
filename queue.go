@@ -21,7 +21,7 @@ type Queue interface {
 type QueuedTask struct {
 	// set by the TaskQueue
 	TaskID   ulid.ULID `json:"task_id"`
-	ScrapeID string    `json:"scrape_id"`
+	ScrapeID ulid.ULID `json:"scrape_id"`
 
 	QueuedAt time.Time `json:"queued_at"`
 	Config   *Config   `json:"config"`
