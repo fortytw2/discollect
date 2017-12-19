@@ -17,12 +17,11 @@ type Worker struct {
 	w  Writer
 	er ErrorReporter
 
-	cooldown time.Duration
 	shutdown chan chan struct{}
 }
 
 // NewWorker provisions a new worker
-func NewWorker(r *Registry, ro Rotator, l Limiter, q Queue, w Writer, er ErrorReporter, cd time.Duration) *Worker {
+func NewWorker(r *Registry, ro Rotator, l Limiter, q Queue, w Writer, er ErrorReporter) *Worker {
 	return &Worker{
 		r:        r,
 		ro:       ro,
@@ -30,7 +29,6 @@ func NewWorker(r *Registry, ro Rotator, l Limiter, q Queue, w Writer, er ErrorRe
 		q:        q,
 		w:        w,
 		er:       er,
-		cooldown: cd,
 		shutdown: make(chan chan struct{}),
 	}
 }
@@ -44,8 +42,6 @@ func (w *Worker) Start(wg *sync.WaitGroup) {
 			s <- struct{}{}
 			return
 		default:
-			time.Sleep(w.cooldown)
-
 			qt, err := w.q.Pop(context.TODO())
 			if err != nil {
 				w.er.Report(context.TODO(), nil, err)

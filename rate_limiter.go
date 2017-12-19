@@ -53,21 +53,19 @@ type Reservation interface {
 // A NilLimiter is a Limiter that doesn't restrict anything
 type NilLimiter struct{}
 
-// Reserve returns a dummy reservation
+// Reserve returns a dummy reservation that always waits one second
 func (*NilLimiter) Reserve(rl *RateLimit, url string) (Reservation, error) {
 	return &nilReservation{}, nil
 }
 
 type nilReservation struct{}
 
-func (*nilReservation) Cancel() {
-	return
-}
+func (*nilReservation) Cancel() {}
 
 func (*nilReservation) OK() bool {
 	return true
 }
 
 func (*nilReservation) Delay() time.Duration {
-	return time.Duration(0)
+	return time.Second
 }
