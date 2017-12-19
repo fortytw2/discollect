@@ -15,6 +15,10 @@ type Plugin struct {
 	Name     string
 	Schedule *Schedule
 	Configs  []*Config
+
+	// RateLimit is set per-plugin
+	RateLimit *RateLimit
+
 	// A ConfigValidator is used to validate dynamically loaded configs
 	ConfigValidator func(*Config) error
 	Routes          map[string]Handler
@@ -36,8 +40,6 @@ type Config struct {
 	Type string
 	// Since is used to convey delta information
 	Since time.Time
-	// Rate is used to configure rate limits, per-scrape, per-ip, and per-domain
-	Rate *RateLimit
 	// Countries is a list of countries this scrape can be executed from
 	// nil if unused
 	Countries []countries.Country

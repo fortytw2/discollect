@@ -94,9 +94,14 @@ func (w *Worker) processTask(ctx context.Context, q *QueuedTask) error {
 		return err
 	}
 
-	// if this rate limit blocks too long and the context cancels we can just return
-	// error and the task will be retried later
-	res, err := w.l.Reserve(q.Config.Rate, q.Task.URL)
+	plugin, err := w.r.Get(q.Plugin)
+	if err != nil {
+		return err
+	}
+
+	// if this rate limit blocks too long and the context cancels we can just
+	// return error and the task will be retried later
+	res, err := w.l.Reserve(plugin.RateLimit, q.Task.URL)
 	if err != nil {
 		return err
 	}
