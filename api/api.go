@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/fortytw2/discollect"
@@ -29,7 +30,14 @@ func scrapeHandler(dc *discollect.Discollector) http.Handler {
 }
 
 func listScrapes(dc *discollect.Discollector, w http.ResponseWriter, r *http.Request) {
+	scs, err := dc.ListScrapes(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(scs)
 }
 
 func startScrape(dc *discollect.Discollector, w http.ResponseWriter, r *http.Request) {

@@ -13,7 +13,7 @@ import (
 type Discollector struct {
 	w  Writer
 	r  *Registry
-	rl RateLimiter
+	l  Limiter
 	ro Rotator
 	q  Queue
 	ms Metastore
@@ -29,7 +29,7 @@ type OptionFn func(d *Discollector) error
 var defaultOpts = []OptionFn{
 	WithWriter(&StdoutWriter{}),
 	WithErrorReporter(&StdoutReporter{}),
-	WithRateLimiter(&NilRateLimiter{}),
+	WithLimiter(&NilLimiter{}),
 	WithRotator(NewDefaultRotator()),
 	WithQueue(NewMemQueue()),
 	WithMetastore(&MemMetastore{}),
@@ -68,7 +68,7 @@ func (d *Discollector) Start(workers int, cooldown time.Duration) error {
 	defer d.workerMu.Unlock()
 
 	for i := workers; i > 0; i-- {
-		w := NewWorker(d.r, d.ro, d.rl, d.q, d.w, d.er, cooldown)
+		w := NewWorker(d.r, d.ro, d.l, d.q, d.w, d.er, cooldown)
 		d.workers = append(d.workers, w)
 	}
 
@@ -85,7 +85,7 @@ func (d *Discollector) Start(workers int, cooldown time.Duration) error {
 // Shutdown spins down all the workers after allowing them to finish
 // their current tasks
 func (d *Discollector) Shutdown(ctx context.Context) {
-	d.workerMu.RLock()
+	d.workerMu.lock()
 	defer d.workerMu.RUnlock()
 
 	for _, w := range d.workers {
@@ -133,10 +133,10 @@ func WithErrorReporter(er ErrorReporter) OptionFn {
 	}
 }
 
-// WithRateLimiter sets the RateLimiter for the Discollector
-func WithRateLimiter(rl RateLimiter) OptionFn {
+// WithLimiter sets the Limiter for the Discollector
+func WithLimiter(l Limiter) OptionFn {
 	return func(d *Discollector) error {
-		d.rl = rl
+		d.l = l
 		return nil
 	}
 }
@@ -185,6 +185,5 @@ func (d *Discollector) ListScrapes(ctx context.Context) ([]*Scrape, error) {
 
 // StartScrape launches a new scrape
 func (d *Discollector) StartScrape(ctx context.Context, pluginName string, config *Config) (string, error) {
-
 	return "", nil
 }

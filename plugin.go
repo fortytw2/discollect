@@ -43,16 +43,6 @@ type Config struct {
 	Countries []countries.Country
 }
 
-// RateLimit is a wrapper struct around a variety of per-config rate limits
-type RateLimit struct {
-	// Rate a single IP can make requests
-	PerIP int
-	// Rate the entire scrape can operate at
-	PerScrape int
-	// Rate per domain using the publicsuffix list to differentiate
-	PerDomain int
-}
-
 // HandlerOpts are passed to a Handler
 type HandlerOpts struct {
 	Config *Config
