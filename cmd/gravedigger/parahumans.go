@@ -73,20 +73,15 @@ func phPage(ctx context.Context, ho *dc.HandlerOpts, t *dc.Task) *dc.HandlerResp
 
 	body = html2md.Convert(strings.TrimSpace(body))
 
-	return &dc.HandlerResponse{
-		Facts: []interface{}{
-			&phChapter{
-				Author:    "wildbow",
-				PostedAt:  dateTs,
-				Title:     title,
-				Body:      strings.Replace(strings.TrimSpace(body), `  `, ` `, -1),
-				WordCount: len(strings.Split(body, " ")),
-			},
+	return dc.Response([]interface{}{
+		&phChapter{
+			Author:    "wildbow",
+			PostedAt:  dateTs,
+			Title:     title,
+			Body:      strings.Replace(strings.TrimSpace(body), `  `, ` `, -1),
+			WordCount: len(strings.Split(body, " ")),
 		},
-		Tasks: []*dc.Task{
-			{
-				URL: nextPageURL,
-			},
-		},
-	}
+	}, &dc.Task{
+		URL: nextPageURL,
+	})
 }

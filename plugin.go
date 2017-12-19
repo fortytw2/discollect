@@ -69,6 +69,14 @@ func ErrorResponse(err error) *HandlerResponse {
 	}
 }
 
+// Response is shorthand for a successful response
+func Response(facts []interface{}, tasks ...*Task) *HandlerResponse {
+	return &HandlerResponse{
+		Facts: facts,
+		Tasks: tasks,
+	}
+}
+
 // A Handler can handle an individual Task
 type Handler func(ctx context.Context, ho *HandlerOpts, t *Task) *HandlerResponse
 
