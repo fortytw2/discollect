@@ -12,7 +12,7 @@ import (
 type Worker struct {
 	r  *Registry
 	ro Rotator
-	rl RateLimiter
+	l  Limiter
 	q  Queue
 	w  Writer
 	er ErrorReporter
@@ -22,11 +22,11 @@ type Worker struct {
 }
 
 // NewWorker provisions a new worker
-func NewWorker(r *Registry, ro Rotator, rl RateLimiter, q Queue, w Writer, er ErrorReporter, cd time.Duration) *Worker {
+func NewWorker(r *Registry, ro Rotator, l Limiter, q Queue, w Writer, er ErrorReporter, cd time.Duration) *Worker {
 	return &Worker{
 		r:        r,
 		ro:       ro,
-		rl:       rl,
+		l:        l,
 		q:        q,
 		w:        w,
 		er:       er,
@@ -100,9 +100,20 @@ func (w *Worker) processTask(ctx context.Context, q *QueuedTask) error {
 
 	// if this rate limit blocks too long and the context cancels we can just return
 	// error and the task will be retried later
-	err = w.rl.Limit(ctx, q.Config.Rate, q.Task.URL)
+	res, err := w.l.Reserve(q.Config.Rate, q.Task.URL)
 	if err != nil {
 		return err
+	}
+
+	if res.OK() {
+		if res.Delay() < time.Second*10 {
+			time.Sleep(res.Delay())
+		} else {
+			res.Cancel()
+			return ErrRateLimitExceeded
+		}
+	} else {
+		return ErrRateLimitExceeded
 	}
 
 	client, err := w.ro.Get(q.Config)

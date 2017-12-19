@@ -1,7 +1,12 @@
 package discollect
 
 import (
+	"errors"
 	"time"
+)
+
+var (
+	ErrRateLimitExceeded = errors.New("discollect: rate limit exceeded")
 )
 
 // RateLimit is a wrapper struct around a variety of per-config rate limits
