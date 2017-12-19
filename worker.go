@@ -44,8 +44,6 @@ func (w *Worker) Start(wg *sync.WaitGroup) {
 			s <- struct{}{}
 			return
 		default:
-			time.Sleep(w.cooldown)
-
 			qt, err := w.q.Pop(context.TODO())
 			if err != nil {
 				w.er.Report(context.TODO(), nil, err)

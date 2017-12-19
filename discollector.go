@@ -85,7 +85,7 @@ func (d *Discollector) Start(workers int, cooldown time.Duration) error {
 // Shutdown spins down all the workers after allowing them to finish
 // their current tasks
 func (d *Discollector) Shutdown(ctx context.Context) {
-	d.workerMu.lock()
+	d.workerMu.Lock()
 	defer d.workerMu.RUnlock()
 
 	for _, w := range d.workers {
