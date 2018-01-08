@@ -15,6 +15,8 @@ type Queue interface {
 	Push(ctx context.Context, tasks []*QueuedTask) error
 
 	Finish(ctx context.Context, taskID ulid.ULID) error
+
+	Status(ctx context.Context, scrapeID ulid.ULID) (*ScrapeStatus, error)
 }
 
 // A QueuedTask is the struct for a task that goes on the Queue
@@ -40,6 +42,13 @@ type Task struct {
 	// Timeout is the timeout a single task should have attached to it
 	// defaults to 15s
 	Timeout time.Duration
+}
+
+// ScrapeStatus is returned from a Queue with information about a specific scrape
+type ScrapeStatus struct {
+	TotalTasks     int `json:"total_tasks,omitempty"`
+	CompletedTasks int `json:"completed_tasks,omitempty"`
+	RetriedTasks   int `json:"retried_tasks,omitempty"`
 }
 
 // NewMemQueue makes a new purely in-memory queue
@@ -80,4 +89,9 @@ func (mq *MemQueue) Push(ctx context.Context, tasks []*QueuedTask) error {
 // Finish is a no-op for the MemQueue
 func (mq *MemQueue) Finish(ctx context.Context, taskID ulid.ULID) error {
 	return nil
+}
+
+// Status returns the status for a given scrape
+func (mq *MemQueue) Status(ctx context.Context, scrapeID ulid.ULID) (*ScrapeStatus, error) {
+	return &ScrapeStatus{}, nil
 }
