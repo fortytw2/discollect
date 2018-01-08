@@ -3,6 +3,8 @@ package discollect
 import (
 	"errors"
 	"time"
+
+	"github.com/oklog/ulid"
 )
 
 var (
@@ -27,7 +29,7 @@ type Limiter interface {
 	// wait before n events happen. The Limiter takes this Reservation into
 	// account when allowing future events. ReserveN returns false if n exceeds
 	// the Limiter's burst size.
-	Reserve(rl *RateLimit, url string) (Reservation, error)
+	Reserve(rl *RateLimit, url string, scrapeID ulid.ULID) (Reservation, error)
 }
 
 // A Reservation holds information about events that are permitted by a Limiter
@@ -54,7 +56,7 @@ type Reservation interface {
 type NilLimiter struct{}
 
 // Reserve returns a dummy reservation that always waits one second
-func (*NilLimiter) Reserve(rl *RateLimit, url string) (Reservation, error) {
+func (*NilLimiter) Reserve(rl *RateLimit, url string, scrapeID ulid.ULID) (Reservation, error) {
 	return &nilReservation{}, nil
 }
 

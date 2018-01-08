@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fortytw2/discollect/countries"
 	"github.com/oklog/ulid"
 )
 
@@ -41,8 +40,9 @@ type Config struct {
 	// Since is used to convey delta information
 	Since time.Time
 	// Countries is a list of countries this scrape can be executed from
+	// in two code, ISO-3166-2 form
 	// nil if unused
-	Countries []countries.Country
+	Countries []string
 }
 
 // HandlerOpts are passed to a Handler

@@ -27,6 +27,6 @@ type ReporterOpts struct {
 type StdoutReporter struct{}
 
 // Report prints out the error
-func (StdoutReporter) Report(ctx context.Context, ro *ReporterOpts, err error) {
+func (StdoutReporter) Report(_ context.Context, ro *ReporterOpts, err error) {
 	fmt.Printf("error-reporter: %+v, %s\n", ro, err)
 }
