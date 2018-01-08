@@ -22,7 +22,7 @@ type DefaultRotator struct {
 // NewDefaultRotator provisions a new default rotator
 func NewDefaultRotator() *DefaultRotator {
 	return &DefaultRotator{
-		&http.Client{
+		client: &http.Client{
 			Transport: &http.Transport{
 				DialContext: (&net.Dialer{
 					Timeout:   30 * time.Second,
