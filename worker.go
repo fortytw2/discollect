@@ -101,7 +101,7 @@ func (w *Worker) processTask(ctx context.Context, q *QueuedTask) error {
 
 	// if this rate limit blocks too long and the context cancels we can just
 	// return error and the task will be retried later
-	res, err := w.l.Reserve(plugin.RateLimit, q.Task.URL)
+	res, err := w.l.Reserve(plugin.RateLimit, q.Task.URL, q.ScrapeID)
 	if err != nil {
 		return err
 	}
